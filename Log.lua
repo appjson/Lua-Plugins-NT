@@ -44,7 +44,7 @@ function ReceiveGroupMsg(CurrentQQ, data)
 end
 
 function ReceiveEvents(CurrentQQ, data, extData)
-    log.notice("==> 收到事件！==>", data.MsgType)
-    log.notice("==> 事件详情！==>", extData)
+    log.notice("收到事件！==>\n", data.MsgType)
+    log.notice("事件详情！==>\n", extData)
     return 1
 end

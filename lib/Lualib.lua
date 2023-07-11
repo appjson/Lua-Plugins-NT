@@ -2,7 +2,8 @@ local log = require("log")
 local api = require("coreApi")
 local json = require("json")
 local http = require("http")
-QQ = 1617688931
+Data = require "Plugins/lib/Data"
+QQ = Data.CurrentQQ
 
 local macros = {
     at = function(qq)

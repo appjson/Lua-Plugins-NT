@@ -1,4 +1,14 @@
+Utils = require "Plugins/lib/Utils"
+
 Data = {}
+
+-- 读取配置常量
+Data.CurrentQQ = Utils.GetConf().CurrentQQ
+Data.AdminQQ = Utils.GetConf().AdminQQ
+Data.Port = Utils.GetConf().Port
+Data.Host = Utils.GetConf().Host
+
+-- 目的是重新解包data，从而适配旧的插件
 
 function Data.FriendMsg(data)
     local old = {
