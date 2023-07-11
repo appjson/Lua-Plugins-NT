@@ -1,0 +1,313 @@
+local log = require("log")
+local api = require("coreApi")
+local json = require("json")
+local http = require("http")
+QQ = 1617688931
+
+local macros = {
+    at = function(qq)
+        if not qq then
+            return ""
+        end
+        if type(qq) == "number" then
+            qq = {qq}
+            return string.format("[ATUSER(%s)]", table.concat(qq, ","))
+        end
+    end,
+    userNick = function(user)
+        return string.format("[GETUSERNICK(%d)]", user)
+    end
+}
+
+local function urlencode(str)
+    return string.gsub(
+        string.gsub(
+            str,
+            "([^%w%.%- ])",
+            function(c)
+                return string.format("%%%02X", string.byte(c))
+            end
+        ),
+        " ",
+        "%%20"
+    )
+end
+
+local Action = {}
+local FRIEND = 1
+local GROUP = 2
+local PRIVATE = 3
+
+function Action:_sendText(user, group, text, at, t)
+    local payload = {CgiCmd = "MessageSvc.PbSendMsg", CgiRequest = {ToUin = 0, ToType = t, Content = text}}
+    if t == FRIEND then
+        payload.CgiRequest.ToUin = user
+    elseif t == GROUP then
+        payload.CgiRequest.ToUin = group
+        if at then
+            print(at) --没完成
+        end
+    else
+        payload.CgiRequest.ToUin = user
+        payload.CgiRequest.GroupCode = group
+    end
+    return api.Api_MagicCgiCmd(QQ, payload)
+end
+
+---发送群文字
+---@param group number: *群号
+---@param text string: *内容
+---@param at number | table: 艾特用户(列表)
+function Action:sendGroupText(group, text, at)
+    return self:_sendText(nil, group, text, at, GROUP)
+end
+
+---发送好友文字
+---@param user number: *好友QQ
+---@param text string: *内容
+function Action:sendFriendText(user, text)
+    return self:_sendText(user, nil, text, nil, FRIEND)
+end
+
+---发送私聊文字
+---@param user number: *用户QQ
+---@param group number: *发起私聊群号
+---@param text string: *内容
+function Action:sendPrivateText(user, group, text)
+    return self:_sendText(user, group, text, nil, PRIVATE)
+end
+
+----------- rich message ----------------
+
+---回复群消息
+---@param group number: *群号
+---@param text string: *回复内容
+---@param msgSeq number: *回复的消息序列号
+---@param msgTime number: 回复的消息时间
+---@param user number: 回复的消息的发送者
+---@param rawContent string: 回复的消息的原内容
+-- function Action:replyGroupMsg(group, text, msgSeq, msgTime, user, rawContent)
+--     local payload = {
+--         toUser = group,
+--         sendToType = GROUP,
+--         sendMsgType = "ReplayMsg",
+--         content = text,
+--         replayInfo = {
+--             MsgSeq = msgSeq,
+--             MsgTime = msgTime or os.time(),
+--             UserID = user or 0,
+--             RawContent = rawContent or ""
+--         }
+--     }
+--     return api.Api_SendMsg(QQ, payload)
+-- end
+function Action:replyGroupMsg(group, text, msgSeq, msgTime, user, rawContent)
+    local payload = {
+        CgiCmd = "MessageSvc.PbSendMsg",
+        CgiRequest = {
+            ToUin = group,
+            ToType = GROUP,
+            Content = rawContent + "\n----------\n" + text
+        }
+    }
+    return api.Api_MagicCgiCmd(QQ, payload)
+end
+
+---回复好友消息
+---@param user number: *好友QQ
+---@param text string: *回复内容
+---@param msgSeq number: *回复的消息序列号
+---@param msgTime number: 回复的消息时间
+---@param rawContent string: 回复的消息的原内容
+function Action:replyFriendMsg(user, text, msgSeq, msgTime, rawContent)
+    -- local payload = {
+    --     toUser = user,
+    --     sendToType = FRIEND,
+    --     sendMsgType = "ReplayMsg",
+    --     content = text,
+    --     replayInfo = {
+    --         MsgSeq = msgSeq,
+    --         MsgTime = msgTime or os.time(),
+    --         UserID = user,
+    --         RawContent = rawContent or ""
+    --     }
+    -- }
+    -- return api.Api_SendMsg(QQ, payload)
+    local payload = {
+        CgiCmd = "MessageSvc.PbSendMsg",
+        CgiRequest = {
+            ToUin = user,
+            ToType = FRIEND,
+            Content = rawContent + "\n----------\n" + text
+        }
+    }
+    return api.Api_MagicCgiCmd(QQ, payload)
+end
+
+----------- pic ----------------
+
+function Action:_sendPic(user, group, text, url, base64, md5, md5s, flash, at, t)
+    text = text or ""
+    if t == GROUP then
+        -- 多图只有群聊可以
+        if at then
+            text = macros.at(at) .. "\n" .. text
+        end
+        if md5s then
+            return api.Api_SendMsgV2(
+                QQ,
+                {
+                    ToUserUid = group,
+                    SendToType = GROUP,
+                    SendMsgType = "PicMsg",
+                    PicMd5s = type(md5s) == "table" and md5s or {md5s}
+                }
+            )
+        end
+        return api.Api_SendMsg(
+            QQ,
+            {
+                toUser = group,
+                sendToType = GROUP,
+                sendMsgType = "PicMsg",
+                content = text or "",
+                picUrl = url or "",
+                picBase64Buf = base64 or "",
+                fileMd5 = md5 or "",
+                flashPic = flash or false
+            }
+        )
+    elseif t == FRIEND then
+        return api.Api_SendMsg(
+            QQ,
+            {
+                toUser = user,
+                sendToType = FRIEND,
+                sendMsgType = "PicMsg",
+                content = text or "",
+                picUrl = url or "",
+                picBase64Buf = base64 or "",
+                fileMd5 = md5 or "",
+                flashPic = flash or false
+            }
+        )
+    else
+        return api.Api_SendMsg(
+            QQ,
+            {
+                toUser = user,
+                groupid = group,
+                sendToType = PRIVATE,
+                sendMsgType = "PicMsg",
+                content = text or "",
+                picUrl = url or "",
+                picBase64Buf = base64 or "",
+                fileMd5 = md5 or "",
+                flashPic = flash or false
+            }
+        )
+    end
+end
+
+-- group
+
+---发送群链接图片
+---@param group number: *群号
+---@param url string: *图片链接
+---@param text string: 文字内容
+---@param at number | table: 艾特用户(列表)
+---@param flash boolean: 是否闪照
+function Action:sendGroupUrlPic(group, url, text, at, flash)
+    return self:_sendPic(nil, group, text, url, nil, nil, nil, flash, at, GROUP)
+end
+
+---发送群base64图片
+---@param group number: *群号
+---@param base64 string: *图片base64
+---@param text string: 文字内容
+---@param at number | table: 艾特用户(列表)
+---@param flash boolean: 是否闪照
+function Action:sendGroupBase64Pic(group, base64, text, at, flash)
+    return self:_sendPic(nil, group, text, nil, base64, nil, nil, flash, at, GROUP)
+end
+
+---发送群base64图片
+---@param group number: *群号
+---@param md5 string: *图片md5
+---@param text string: 文字内容
+---@param at number | table: 艾特用户(列表)
+---@param flash boolean: 是否闪照
+function Action:sendGroupMD5Pic(group, md5, text, at, flash)
+    return self:_sendPic(nil, group, text, nil, nil, md5, flash, at, GROUP)
+end
+
+---发送群多图
+---@param group number: *群号
+---@param md5s string | table: *图片md5或md5列表
+function Action:sendGroupMutiplePic(group, md5s)
+    return self:_sendPic(nil, group, nil, nil, nil, nil, md5s, nil, nil, GROUP)
+end
+
+-- friend
+
+---发送好友链接图片
+---@param user number: *好友QQ
+---@param url string: *图片链接
+---@param text string: 文字内容
+---@param flash boolean: 是否闪照
+function Action:sendFriendUrlPic(user, url, text, flash)
+    return self:_sendPic(user, nil, text, url, nil, nil, nil, flash, nil, FRIEND)
+end
+
+---发送好友base64图片
+---@param user number: *好友QQ
+---@param base64 string: *图片base64
+---@param text string: 文字内容
+---@param flash boolean: 是否闪照
+function Action:sendFriendBase64Pic(user, base64, text, flash)
+    return self:_sendPic(user, nil, text, nil, base64, nil, nil, flash, nil, FRIEND)
+end
+
+---发送好友md5图片
+---@param user number: *好友QQ
+---@param md5 string: *图片md5
+---@param text string: 文字内容
+---@param flash boolean: 是否闪照
+function Action:sendFriendMD5Pic(user, md5, text, flash)
+    return self:_sendPic(user, nil, text, nil, nil, md5, nil, flash, nil, FRIEND)
+end
+
+-- private
+
+---发送私聊链接图片
+---@param user number: *用户QQ
+---@param group number: *发送私聊群号
+---@param url string: *图片链接
+---@param text string: 文字内容
+function Action:sendPrivateUrlPic(user, group, url, text)
+    return self:_sendPic(user, group, text, url, nil, nil, nil, nil, nil, PRIVATE)
+end
+
+---发送私聊base64图片
+---@param user number: *用户QQ
+---@param group number: *发送私聊群号
+---@param base64 string: *图片base64
+---@param text string: 文字内容
+function Action:sendPrivateBase64Pic(user, group, base64, text)
+    return self:_sendPic(user, group, text, nil, base64, nil, nil, nil, nil, PRIVATE)
+end
+
+---发送私聊md5图片
+---@param user number: *用户QQ
+---@param group number: *发送私聊群号
+---@param md5 string: *图片md5
+---@param text string: 文字内容
+function Action:sendPrivateMD5Pic(user, group, md5, text)
+    return self:_sendPic(user, group, text, nil, nil, md5, nil, nil, nil, PRIVATE)
+end
+
+return {
+    Action = Action,
+    macros = macros,
+    urlencode = urlencode
+}
