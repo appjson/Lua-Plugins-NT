@@ -1,7 +1,4 @@
 local log = require("log")
-local Api = require("coreApi")
-local json = require("json")
-local http = require("http")
 Data = require "Plugins/lib/Data"
 
 function ReceiveFriendMsg(CurrentQQ, data)

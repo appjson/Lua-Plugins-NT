@@ -2,7 +2,7 @@
 local log = require("log")
 local json = require("json")
 local http = require("http")
-local lib = require "Plugins/lib/Lualib"
+LuaApi = require "Plugins/lib/LuaApi"
 Data = require "Plugins/lib/Data"
 Utils = require "Plugins/lib/Utils"
 
@@ -83,7 +83,7 @@ function ReceiveFriendMsg(CurrentQQ, data)
     for k, v in ipairs(msg_tb) do
       msg = msg .. v .. "\n"
     end
-    lib.Action:sendFriendText(data.FromUin, msg)
+    LuaApi.Action:sendFriendText(data.FromUin, msg)
     return 1
   end
 
@@ -110,7 +110,7 @@ function ReceiveFriendMsg(CurrentQQ, data)
         res["ResponseData"]["GoroutineNum"],
         res["ResponseData"]["Version"]
       )
-      lib.Action:sendFriendText(data.FromUin, msg)
+      LuaApi.Action:sendFriendText(data.FromUin, msg)
     end
     return 1
   end
@@ -128,7 +128,7 @@ function ReceiveFriendMsg(CurrentQQ, data)
         msg = msg .. i .. " - " .. s
         i = i + 1
       end
-      lib.Action:sendFriendText(data.FromUin, msg)
+      LuaApi.Action:sendFriendText(data.FromUin, msg)
       return 1
     end
   end
@@ -146,7 +146,7 @@ function ReceiveFriendMsg(CurrentQQ, data)
         msg = msg .. i .. " - " .. s
         i = i + 1
       end
-      lib.Action:sendFriendText(data.FromUin, msg)
+      LuaApi.Action:sendFriendText(data.FromUin, msg)
       return 1
     end
   end
@@ -160,7 +160,7 @@ function ReceiveFriendMsg(CurrentQQ, data)
     local cmd = "mv " .. dir .. files .. ".disabled" .. " " .. dir .. files
     os.execute(cmd)
     local msg = "已启用插件：" .. files
-    lib.Action:sendFriendText(data.FromUin, msg)
+    LuaApi.Action:sendFriendText(data.FromUin, msg)
     return 1
   end
 
@@ -170,11 +170,12 @@ function ReceiveFriendMsg(CurrentQQ, data)
     local cmd = "mv " .. dir .. files .. " " .. dir .. files .. ".disabled"
     os.execute(cmd)
     local msg = "已停用插件：" .. files
-    lib.Action:sendFriendText(data.FromUin, msg)
+    LuaApi.Action:sendFriendText(data.FromUin, msg)
     return 1
   end
   return 1
 end
+
 function ReceiveGroupMsg(CurrentQQ, data)
   data = Data.GroupMsg(data)
   if data.FromUserId == tonumber(CurrentQQ) then
@@ -190,12 +191,12 @@ function ReceiveGroupMsg(CurrentQQ, data)
     for k, v in ipairs(msg_tb) do
       msg = msg .. v .. "\n"
     end
-    lib.Action:sendGroupText(data.FromGroupId, msg, {})
+    LuaApi.Action:sendGroupText(data.FromGroupId, msg, {})
     return 1
   end
 
   if data.Content:find("^给大家打个招呼$") and data.FromUserId == Data.AdminQQ then
-    lib.Action:sendGroupText(data.FromGroupId, welcome, {})
+    LuaApi.Action:sendGroupText(data.FromGroupId, welcome, {})
     return 1
   end
 
@@ -212,7 +213,7 @@ function ReceiveGroupMsg(CurrentQQ, data)
         msg = msg .. i .. " - " .. s
         i = i + 1
       end
-      lib.Action:sendGroupText(data.FromGroupId, msg, {})
+      LuaApi.Action:sendGroupText(data.FromGroupId, msg, {})
       return 1
     end
   end
@@ -230,7 +231,7 @@ function ReceiveGroupMsg(CurrentQQ, data)
         msg = msg .. i .. " - " .. s
         i = i + 1
       end
-      lib.Action:sendGroupText(data.FromGroupId, msg, {})
+      LuaApi.Action:sendGroupText(data.FromGroupId, msg, {})
       return 1
     end
   end
@@ -243,7 +244,7 @@ function ReceiveGroupMsg(CurrentQQ, data)
     local dir = "./Plugins/"
     local cmd = "mv " .. dir .. files .. ".disabled" .. " " .. dir .. files
     os.execute(cmd)
-    lib.Action:sendGroupText(data.FromGroupId, "已启用：" .. files, {})
+    LuaApi.Action:sendGroupText(data.FromGroupId, "已启用：" .. files, {})
     return 1
   end
 
@@ -252,19 +253,24 @@ function ReceiveGroupMsg(CurrentQQ, data)
     local dir = "./Plugins/"
     local cmd = "mv " .. dir .. files .. " " .. dir .. files .. ".disabled"
     os.execute(cmd)
-    lib.Action:sendGroupText(data.FromGroupId, "已停用：" .. files .. ".disabled", {})
+    LuaApi.Action:sendGroupText(data.FromGroupId, "已停用：" .. files .. ".disabled", {})
     return 1
   end
 
   if data.Content:find("^%.time$") then
-    local t = Utils.GetDateTime()
-    lib.Action:sendGroupText(data.FromGroupId, t, {})
+    local t = Utils.GetWeekTime()
+    LuaApi.Action:sendGroupText(data.FromGroupId, t, {})
     return 1
   end
 
   if data.Content:find("^机器人状态$") then
+    local payload = {
+      CgiCmd = "ClusterInfo",
+      CgiRequest = {}
+    }
     local ret = http.request("GET", "http://" .. Data.Host .. "/v1/clusterinfo")
     if ret ~= nil and ret ~= "" then
+      print(ret.body)
       local res = json.decode(ret.body)
       local msg =
         string.format(
@@ -285,12 +291,13 @@ function ReceiveGroupMsg(CurrentQQ, data)
         res["ResponseData"]["GoroutineNum"],
         res["ResponseData"]["Version"]
       )
-      lib.Action:sendGroupText(data.FromGroupId, msg, {})
+      LuaApi.Action:sendGroupText(data.FromGroupId, msg, {})
     end
     return 1
   end
   return 1
 end
+
 function ReceiveEvents(CurrentQQ, data, extData)
   return 1
 end

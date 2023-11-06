@@ -9,11 +9,16 @@ function Utils.Sleep(n)
     while os.clock() - t0 <= n do
     end
 end
-function Utils.GetConf()
+
+function Utils.GetConf(key)
     local raw = Utils.ReadFile("./Plugins/conf.json")
     local conf = json.decode(raw)
+    if key ~= nil then
+        return conf[key]
+    end
     return conf
 end
+
 --时间戳->字符串 格式化时间 到秒
 function Utils.FormatUnixTime2Date(t)
     return string.format(
@@ -26,12 +31,18 @@ function Utils.FormatUnixTime2Date(t)
         os.date("%S", t)
     )
 end
+
 --时间戳->字符串 格式化时间 到日期
 function Utils.FormatUnixTime2Day(t)
     return string.format("%s年%s月%s日", os.date("%Y", t), os.date("%m", t), os.date("%d", t))
 end
--- 格式化日期（自定义）
+
 function Utils.GetDateTime()
+    return os.date("%Y%m%d", os.time())
+end
+
+-- 格式化日期（自定义）
+function Utils.GetWeekTime()
     local _WEEK = {"星期日", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六"}
     local d = os.time()
     local w = os.date("%w", d)
@@ -39,6 +50,7 @@ function Utils.GetDateTime()
     t = t .. _WEEK[w + 1]
     return t
 end
+
 --字符串分割
 function Utils.split(input, delimiter)
     input = tostring(input)
@@ -57,6 +69,7 @@ function Utils.split(input, delimiter)
     table.insert(arr, string.sub(input, pos))
     return arr
 end
+
 --读取文件
 function Utils.ReadFile(filePath)
     local f, err = io.open(filePath, "rb")
@@ -69,6 +82,7 @@ function Utils.ReadFile(filePath)
         return content
     end
 end
+
 --Url解码
 function Utils.UrlDecode(s)
     s =
@@ -81,16 +95,19 @@ function Utils.UrlDecode(s)
     )
     return s
 end
+
 --随机整数
 function Utils.GenRandInt(x, y)
     math.randomseed(tonumber(tostring(os.time()):reverse():sub(1, 6)))
     local num = math.random(x, y)
     return num
 end
+
 function Random(n, m)
     math.randomseed(os.clock() * math.random(1000000, 90000000) + math.random(1000000, 90000000))
     return math.random(n, m)
 end
+
 --随机字符串
 function Utils.RandomLetter(len)
     local rt = ""
@@ -99,6 +116,7 @@ function Utils.RandomLetter(len)
     end
     return rt
 end
+
 --获取星期几
 function Utils.GetWday()
     local wday = os.date("%w", os.time())
@@ -113,9 +131,24 @@ function Utils.GetWday()
     }
     return weekTab[wday]
 end
---写文件
-function Utils.WriteFile(path, content)
-    local file = io.open(path, "w+b")
+
+--写文件二进制
+function Utils.WriteFile(path, stream)
+    local file = io.open(path, "wb")
+    if file then
+        if file:write(stream) == nil then
+            return false
+        end
+        io.close(file)
+        return true
+    else
+        return false
+    end
+end
+
+--写文件内容
+function Utils.WriteContent(path, content)
+    local file = io.open(path, "w+")
     if file then
         if file:write(content) == nil then
             return false

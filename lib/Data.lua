@@ -2,6 +2,10 @@ Utils = require "Plugins/lib/Utils"
 
 Data = {}
 
+MsgType = {
+    [82] = "TextMsg"
+}
+
 -- 读取配置常量
 Data.CurrentQQ = Utils.GetConf().CurrentQQ
 Data.AdminQQ = Utils.GetConf().AdminQQ
@@ -13,8 +17,11 @@ Data.Host = Utils.GetConf().Host
 function Data.FriendMsg(data)
     local old = {
         FromUin = data.MsgHead.FromUin,
+        FromUid = data.MsgHead.FromUid,
         ToUin = data.MsgHead.ToUin,
-        MsgType = data.MsgHead.MsgType,
+        ToUid = data.MsgHead.ToUid,
+        MsgType = MsgType[data.MsgHead.MsgType],
+        MsgCode = data.MsgHead.MsgType,
         Content = data.MsgBody.Content,
         MsgSeq = data.MsgHead.MsgSeq,
         MsgTime = data.MsgHead.MsgTime,
@@ -29,9 +36,12 @@ function Data.GroupMsg(data)
         FromGroupId = data.MsgHead.FromUin,
         FromGroupName = data.MsgHead.GroupInfo.GroupName,
         FromUserId = data.MsgHead.SenderUin,
+        FromUserUid = data.MsgHead.SenderUid,
         FromNickName = data.MsgHead.SenderNick,
-        MsgType = data.MsgHead.MsgType,
+        MsgType = MsgType[data.MsgHead.MsgType],
+        MsgCode = data.MsgHead.MsgType,
         Content = data.MsgBody.Content,
+        AtUsers = data.MsgBody.AtUinLists,
         MsgSeq = data.MsgHead.MsgSeq,
         MsgTime = data.MsgHead.MsgTime,
         MsgRandom = data.MsgHead.MsgRandom,
