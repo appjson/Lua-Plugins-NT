@@ -16,6 +16,8 @@ Data.Host = Utils.GetConf().Host
 
 function Data.FriendMsg(data)
     local old = {
+        AdminMsg = data.MsgHead.FromUid == Data.AdminQQ,
+        SelfMsg = data.MsgHead.FromUid == Data.CurrentQQ,
         FromUin = data.MsgHead.FromUin,
         FromUid = data.MsgHead.FromUid,
         ToUin = data.MsgHead.ToUin,
@@ -33,6 +35,8 @@ end
 
 function Data.GroupMsg(data)
     local old = {
+        AdminMsg = data.MsgHead.SenderUin == Data.AdminQQ,
+        SelfMsg = data.MsgHead.SenderUin == Data.CurrentQQ,
         FromGroupId = data.MsgHead.FromUin,
         FromGroupName = data.MsgHead.GroupInfo.GroupName,
         FromUserId = data.MsgHead.SenderUin,

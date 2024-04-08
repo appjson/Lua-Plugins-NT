@@ -88,9 +88,10 @@ function ReceiveFriendMsg(CurrentQQ, data)
   end
 
   if data.Content:find("^机器人状态$") then
-    local ret = http.request("GET", "http://" .. Data.Host .. "/v1/clusterinfo")
-    if ret ~= nil and ret ~= "" then
-      local res = json.decode(ret.body)
+    local res = Action:botInfo()
+    if res ~= nil and res ~= "" then
+      -- print(ret.body)
+      -- local res = json.decode(ret.body)
       local msg =
         string.format(
         "QQ：%s\nQQ等级：%s\n总收发消息：%d/%d\n总收发数据：%s/%s\n在线时长：%s\n\n核心：%s %s\n运行时间：%s\n内存占用：%s\nGo版本：%s-%s\nGo程：%d\n机器人版本：%s\n#WITHDRAW=20",
@@ -264,14 +265,10 @@ function ReceiveGroupMsg(CurrentQQ, data)
   end
 
   if data.Content:find("^机器人状态$") then
-    local payload = {
-      CgiCmd = "ClusterInfo",
-      CgiRequest = {}
-    }
-    local ret = http.request("GET", "http://" .. Data.Host .. "/v1/clusterinfo")
-    if ret ~= nil and ret ~= "" then
-      print(ret.body)
-      local res = json.decode(ret.body)
+    local res = Action:botInfo()
+    if res ~= nil and res ~= "" then
+      -- print(ret.body)
+      -- local res = json.decode(ret.body)
       local msg =
         string.format(
         "QQ：%s\nQQ等级：%s\n总收发消息：%d/%d\n总收发数据：%s/%s\n在线时长：%s\n\n核心：%s %s\n运行时间：%s\n内存占用：%s\nGo版本：%s-%s\nGo程：%d\n机器人版本：%s\n#WITHDRAW=20",

@@ -1,0 +1,62 @@
+LuaApi = require "Plugins/lib/LuaApi"
+Data = require "Plugins/lib/Data"
+local json = require("json")
+
+function WriteMsg(msg)
+    local msgCache = "./Plugins/Data/AutoReply.txt"
+    local f_w1, _ = io.open(msgCache, "w+")
+    if f_w1 ~= nil then
+        f_w1:write(msg)
+        f_w1:close()
+        return 1
+    end
+end
+
+function ReadMsg()
+    local msgCache = "./Plugins/Data/AutoReply.txt"
+    local f_r, _ = io.open(msgCache, "r")
+    local data = nil
+    if f_r ~= nil then
+        data = f_r:read("*a")
+        if data ~= nil then
+            return data
+        else
+            return "nil"
+        end
+    else
+        return "nil"
+    end
+end
+
+function ReceiveGroupMsg(CurrentQQ, data)
+    data = Data.GroupMsg(data)
+    if data.FromUserId == tonumber(CurrentQQ) then
+        return 1
+    end
+
+    return 1
+end
+function ReceiveFriendMsg(CurrentQQ, data)
+    data = Data.FriendMsg(data)
+    if data.FromUin == tonumber(CurrentQQ) then
+        return 1
+    end
+    if string.find(data.Content, "写公告：") and data.AdminMsg then
+        local msg = data.Content:gsub("写公告：", "", 1)
+        local ret = WriteMsg(msg)
+        if ret == 1 then
+            LuaApi.Action:sendFriendText(data.FromUin, "写入成功：\n" .. msg)
+        end
+    end
+    if string.find(data.Content, "清除公告") and data.AdminMsg then
+        local msg = "nil"
+        local ret = WriteMsg(msg)
+        if ret == 1 then
+            LuaApi.Action:sendFriendText(data.FromUin, "写入成功：\n" .. msg)
+        end
+    end
+    return 1
+end
+function ReceiveEvents(CurrentQQ, data, extData)
+    return 1
+end

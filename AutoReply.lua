@@ -494,24 +494,24 @@ function ReceiveGroupMsg(CurrentQQ, data)
         LuaApi.Action:sendGroupText(data.FromGroupId, str)
         return 1
     end
-    if data.MsgType == "AtMsg" and data.Content:find("[%?？]") then
-        local content = json.decode(data.Content)
-        local id = tonumber(content.UserID[1])
-        if id == 1948511629 then
-            local music = {"../Music/ngmhhy.silk", "../Music/nhf.silk"}
-            local selected = music[math.random(1, #music)]
-            Api.Api_SendMsgV2(
-                CurrentQQ,
-                {
-                    ToUserUid = data.FromGroupId,
-                    SendToType = 2,
-                    SendMsgType = "VoiceMsg",
-                    VoicePath = selected
-                }
-            )
-        end
-        return 1
-    end
+    -- if data.MsgType == "AtMsg" and data.Content:find("[%?？]") then
+    --     local content = json.decode(data.Content)
+    --     local id = tonumber(content.UserID[1])
+    --     if id == 1948511629 then
+    --         local music = {"../Music/ngmhhy.silk", "../Music/nhf.silk"}
+    --         local selected = music[math.random(1, #music)]
+    --         Api.Api_SendMsgV2(
+    --             CurrentQQ,
+    --             {
+    --                 ToUserUid = data.FromGroupId,
+    --                 SendToType = 2,
+    --                 SendMsgType = "VoiceMsg",
+    --                 VoicePath = selected
+    --             }
+    --         )
+    --     end
+    --     return 1
+    -- end
     return 1
 end
 function ReceiveEvents(CurrentQQ, data, extData)

@@ -62,6 +62,66 @@ function ReceiveGroupMsg(CurrentQQ, data)
         local selected = dir .. "nhf.silk"
         LuaApi.Action:sendGroupVoice(data.FromGroupId, selected)
     end
+    if data.Content:find("^蛤？$") then
+        local dir = "../Music/"
+        local selected = dir .. "ha1.silk"
+        LuaApi.Action:sendGroupVoice(data.FromGroupId, selected)
+    end
+    if data.Content:find("^蛤？？$") then
+        local dir = "../Music/"
+        local selected = dir .. "ha2.silk"
+        LuaApi.Action:sendGroupVoice(data.FromGroupId, selected)
+    end
+    if data.Content:find("^乌拉$") then
+        local dir = "../Music/"
+        local selected = dir .. "wula.silk"
+        LuaApi.Action:sendGroupVoice(data.FromGroupId, selected)
+    end
+    if data.Content:find("^乌拉呀哈$") then
+        local dir = "../Music/"
+        local selected = dir .. "wulayaha.silk"
+        LuaApi.Action:sendGroupVoice(data.FromGroupId, selected)
+    end
+    if data.Content:find("^乌拉呀哈呀哈乌拉$") then
+        local dir = "../Music/"
+        local selected = dir .. "wula-yaha-2.silk"
+        LuaApi.Action:sendGroupVoice(data.FromGroupId, selected)
+    end
+    if data.Content:find("^乌拉咿呀哈$") then
+        local dir = "../Music/"
+        local selected = dir .. "wula-yiyaha.silk"
+        LuaApi.Action:sendGroupVoice(data.FromGroupId, selected)
+    end
+    if data.Content:find("^呀！$") then
+        local dir = "../Music/"
+        local selected = dir .. "ya.silk"
+        LuaApi.Action:sendGroupVoice(data.FromGroupId, selected)
+    end
+    if data.Content:find("^呀哈！$") then
+        local dir = "../Music/"
+        local selected = dir .. "yaha.silk"
+        LuaApi.Action:sendGroupVoice(data.FromGroupId, selected)
+    end
+    if data.Content:find("^oi~$") then
+        local dir = "../Music/"
+        local selected = dir .. "oi-1.silk"
+        LuaApi.Action:sendGroupVoice(data.FromGroupId, selected)
+    end
+    if data.Content:find("^oi~~$") then
+        local dir = "../Music/"
+        local selected = dir .. "oi-2.silk"
+        LuaApi.Action:sendGroupVoice(data.FromGroupId, selected)
+    end
+    if data.Content:find("^oi~~~$") then
+        local dir = "../Music/"
+        local selected = dir .. "oi-3.silk"
+        LuaApi.Action:sendGroupVoice(data.FromGroupId, selected)
+    end
+    if data.Content:find("^遥遥领先$") then
+        local dir = "../Music/"
+        local selected = dir .. "yylx.silk"
+        LuaApi.Action:sendGroupVoice(data.FromGroupId, selected)
+    end
     return 1
 end
 function ReceiveEvents(CurrentQQ, data, extData)

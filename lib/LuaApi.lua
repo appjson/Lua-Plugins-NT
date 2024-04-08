@@ -164,6 +164,42 @@ function Action:sendGroupVoice(to, filePath)
     return self:_sendVoice(to, GROUP, filePath)
 end
 
+------ JSON 消息 ------
+function Action:_sendJson(to, type, content)
+    content = json.encode(content)
+    local payload = {
+        CgiCmd = "MessageSvc.PbSendMsg",
+        CgiRequest = {
+            ToUin = to,
+            ToType = type,
+            SubMsgType = 51,
+            Content = content
+        }
+    }
+    return Api.Api_MagicCgiCmd(QQ, payload)
+end
+function Action:sendGroupJson(to, content)
+    return self:_sendJson(to, GROUP, content)
+end
+
+------ XML 消息 ------
+function Action:_sendXml(to, type, content)
+    local payload = {
+        CgiCmd = "MessageSvc.PbSendMsg",
+        CgiRequest = {
+            ToUin = to,
+            ToType = type,
+            SubMsgType = 12,
+            Content = content
+        }
+    }
+    return Api.Api_MagicCgiCmd(QQ, payload)
+end
+function Action:sendGroupXml(to, content)
+    return self:_sendXml(to, GROUP, Utils.UrlEncode(content))
+end
+
+------ 撤回消息 ------
 function Action:revokeGroupMsg(group, seq, random)
     local payload = {
         CgiCmd = "GroupRevokeMsg",
@@ -189,21 +225,14 @@ function Action:shutup(group, id, second)
     return Api.Api_MagicCgiCmd(QQ, payload)
 end
 
-local function urlencode(str)
-    return string.gsub(
-        string.gsub(
-            str,
-            "([^%w%.%- ])",
-            function(c)
-                return string.format("%%%02X", string.byte(c))
-            end
-        ),
-        " ",
-        "%%20"
-    )
+function Action:botInfo()
+    local payload = {
+        CgiCmd = "ClusterInfo",
+        CgiRequest = {}
+    }
+    return Api.Api_MagicCgiCmd(QQ, payload)
 end
 
 return {
-    Action = Action,
-    urlencode = urlencode
+    Action = Action
 }

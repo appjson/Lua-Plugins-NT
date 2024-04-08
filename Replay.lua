@@ -1,5 +1,6 @@
 LuaApi = require "Plugins/lib/LuaApi"
 Data = require "Plugins/lib/Data"
+WhiteList = require "Plugins/WhiteList"
 
 function ReceiveFriendMsg(CurrentQQ, data)
     return 1
@@ -9,12 +10,15 @@ function ReceiveGroupMsg(CurrentQQ, data)
     if data.FromUserId == tonumber(CurrentQQ) then
         return 1
     end
-
-    if (string.find(data.Content, "^复读机 ")) then
-        local keyWord = data.Content:gsub("复读机 ", "", 1)
-        LuaApi.Action:sendGroupText(data.FromGroupId, keyWord)
+    if data.Content:find("%.send ") then
+        local checkWL = WhiteList.Check(data.FromUserId, WhiteList.DefaultLevel)
+        if checkWL ~= nil then
+            return 1
+        end
+        local content = data.Content:gsub("%.send ", "")
+        LuaApi.Action:sendGroupText(data.FromGroupId, content)
         os.execute("sleep 3")
-        LuaApi.Action:sendGroupText(data.FromGroupId, keyWord)
+        LuaApi.Action:sendGroupText(data.FromGroupId, content)
     end
     return 1
 end
